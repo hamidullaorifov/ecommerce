@@ -1,0 +1,143 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="box-element">
+
+				<a  class="btn btn-outline-dark" id="continue-shopping" href="{% url 'store' %}">&#x2190; Continue Shopping</a>
+
+				<br>
+				<br>
+				<table class="table">
+					<tr>
+						<th><h5>Items: <strong id="total-count">{{order.get_total_count}}</strong></h5></th>
+						<th><h5>Total:<strong id="total-price">${{order.get_total_price|floatformat:2}}</strong></h5></th>
+						<th>
+							<a  style="float:right; margin:5px;" class="btn btn-success" href="{% url 'checkout' %}" id="checkout">Checkout</a>
+						</th>
+					</tr>
+				</table>
+
+			</div>
+
+			<br>
+			<div class="box-element">
+				<div class="cart-row">
+					<div style="flex:2"></div>
+					<div style="flex:2"><strong>Item</strong></div>
+					<div style="flex:1"><strong>Price</strong></div>
+					<div style="flex:1"><strong>Quantity</strong></div>
+					<div style="flex:1"><strong>Total</strong></div>
+				</div>
+				{% for item in order.orderitems.all %}
+				<div class="cart-row order-items" id="cartrow-{{item.product.id}}" data-productid="{{item.product.id}}">
+					<div style="flex:2"><img class="row-image" src="{{item.product.imageURL}}"></div>
+					<!-- <div style="flex:2"><p>{{item.product.name}}</p></div> -->
+					<div style="flex:2" id="product-name-{{item.product.id}}"><p>{{item.product.name}}</p></div>
+					<div style="flex:1" id="product-price-{{item.product.id}}"><p>${{item.product.price|floatformat:2}}</p></div>
+					<div style="flex:1">
+						<p class="quantity" id="product-quantity-{{item.product.id}}">{{item.quantity}}</p>
+						<div class="quantity">
+							<img data-product="{{item.product.id}}" data-action="add" class="chg-quantity update-cart" src="{% static  'images/arrow-up.png' %}">
+					
+							<img data-product="{{item.product.id}}" data-action="remove" class="chg-quantity update-cart" src="{% static  'images/arrow-down.png' %}">
+						</div>
+					</div>
+					<div style="flex:1"><p id="total-{{item.product.id}}">${{item.get_total|floatformat:2}}</p></div>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+
+    <script>
+		let carttotal = document.getElementById('cart-total');
+		let totalcount = document.getElementById('total-count');
+		let totalprice = document.getElementById('total-price');
+		let updateBtns = document.getElementsByClassName('update-cart');
+		for(var i=0;i<updateBtns.length;i++){
+			updateBtns[i].addEventListener("click",function(){
+				let id = this.dataset.product;
+				let productquantity = document.getElementById("product-quantity-"+id);
+				let productprice = document.getElementById("product-price-"+id);
+				if(this.dataset.action=="add"){
+					productquantity.innerText=parseInt(productquantity.innerText)+1;
+					totalcount.innerText = parseInt(totalcount.innerText)+1;
+					totalprice.innerText = "$"+(parseFloat(totalprice.innerText.substring(1))+parseFloat(productprice.innerText.substring(1))).toFixed(2);
+					carttotal.innerText = parseInt(carttotal.innerText)+1;
+
+				}
+				else{
+					if(parseInt(productquantity.innerText)>1){
+						productquantity.innerText=parseInt(productquantity.innerText)-1;
+					}
+					else{
+						elem=document.getElementById('cartrow-'+id);
+						elem.innerText="";
+					}
+					totalcount.innerText = parseInt(totalcount.innerText)-1;
+					totalprice.innerText ="$"+(parseFloat(totalprice.innerText.substring(1))-parseFloat(productprice.innerText.substring(1))).toFixed(2);
+					carttotal.innerText = parseInt(carttotal.innerText)-1;
+				}
+				if(document.getElementById("cartrow-"+id).innerHTML ){
+				let totalProductPrice = (parseInt(productquantity.innerText)*parseFloat(productprice.innerText.substring(1))).toFixed(2);
+				document.getElementById("total-"+id).innerText="$"+totalProductPrice;
+				}
+
+			})
+		}
+		eventfunction=function(url){
+
+		let orderitems=[];
+		let items=document.getElementsByClassName('order-items');
+		for(var i=0;i<items.length;i++){
+			id = items[i].dataset.productid;
+			let quantity=0;
+			// console.log(("product-quantity-"+id));
+			if(document.getElementById("product-quantity-"+id)){
+				quantity = parseInt(document.getElementById("product-quantity-"+id).innerText);
+			}
+			
+			console.log(quantity);
+			let item = {
+				"id":id,
+				"quantity":quantity,	
+			}
+			orderitems.push(item)
+		}
+		let data={
+			'orderitems':orderitems,
+		}
+
+		console.log(data)
+
+		fetch(url,{
+			method:"POST",
+			headers:{
+				'X-CSRFToken':'{{ csrf_token }}',
+				'Content_Type':'application/json',
+			},	
+			body: JSON.stringify(data),
+		})
+		.then(response => response.json())
+		.then(data => {
+		  console.log('Success:', data);
+		})
+		.catch((error) => {
+		  console.error('Error:', error);
+		});
+	 }
+		btnContinue = document.getElementById("continue-shopping");
+		btnContinue.addEventListener("click",function(){
+			eventfunction("/updatecart/");
+		});
+		btnCheckout = document.getElementById("checkout");
+		btnCheckout.addEventListener("click",function(){
+			eventfunction("/gotocheckout/");
+		});
+
+		
+    </script>
+{% endblock content %}

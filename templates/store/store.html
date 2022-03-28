@@ -1,0 +1,81 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+	<div class="row">
+		
+		{% for product in products %}
+		<div class="col-lg-4">
+			<img class="thumbnail" src="{{product.imageURL}}">
+			<div class="box-element product">
+				<h6><strong>{{product.name}}</strong></h6>
+				<hr>
+
+				<button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+				
+				<a class="btn btn-outline-success" href="#">View</a>
+				<h4 style="display: inline-block; float: right;"><strong>${{product.price}}</strong></h4>
+
+			</div>
+		</div>
+		{% endfor %}
+        
+	</div>
+
+
+	<script>
+		cartTotal = document.getElementById('cart-total');
+		let addCartBtns = document.getElementsByClassName('update-cart');
+		let orderItems = [];
+		let orderItem;
+		let orderedProducts = {};
+		var orders=[];
+		for(let i=0;i<addCartBtns.length;i++){
+		  orderItem = {
+			"id": addCartBtns[i].dataset.product, 
+			"quantity":0,
+		  };
+		  orderItems.push(orderItem)
+		}
+		for(let i=0;i<addCartBtns.length;i++){
+			addCartBtns[i].addEventListener('click',function(){
+			  if(addCartBtns[i].dataset.action=="add"){
+				cartTotal.innerText = parseInt(cartTotal.innerText)+1;
+				orderedProducts[i]=1;
+				orderItems[i].quantity=orderItems[i].quantity+1;
+			  }
+			  
+		  })
+		}
+		let cartIcon = document.getElementById('cart-icon');
+		cartIcon.addEventListener("click",function(){
+		  
+		  for(key in orderedProducts){
+			orders.push(orderItems[key]);
+		}
+		let data = {
+		  'orders':orders,
+		} 
+		 console.log(data);
+		fetch('/gotoCart/',{
+		  method:'POST',
+		  headers: {
+			'X-CSRFToken': '{{ csrf_token }}',
+			'Content-Type': 'application/json',
+	  },
+	  body: JSON.stringify(data),
+		})
+		.then(response => response.json())
+		.then(data => {
+		  console.log('Success:', data);
+		})
+		.catch((error) => {
+		  console.error('Error:', error);
+		});
+		})
+		  
+		
+		
+	
+	  </script>
+
+{% endblock %}

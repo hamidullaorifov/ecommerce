@@ -1,0 +1,113 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+     <div class="row">
+		<div class="col-lg-6">
+			<div class="box-element" id="form-wrapper">
+				 <form id="form" method="POST" action="/complete/">
+					 {% csrf_token %}
+					
+					<div id="shipping-info">
+						
+						<p>Shipping Information:</p>
+						<hr>
+						<div class="form-field">
+							<input id="addressInp" class="form-control" type="text" name="address" placeholder="Address..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" id="cityInp" type="text" name="city" placeholder="City..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" id="stateInp" type="text" name="state" placeholder="State..">
+						</div>
+						<div class="form-field">
+							<input id="zipCodeInp" class="form-control" type="text" name="zipcode" placeholder="Zip code..">
+						</div>
+						<div class="form-field">
+							<input class="form-control" id="countryInp" type="text" name="country" placeholder="Country">
+						</div>
+					</div>
+
+					<hr>
+					<button id="form-button" class="btn btn-success btn-block" type="submit">Continue</button>
+				</form>
+			</div>
+
+			<!-- <br>
+			<div class="box-element hidden" id="payment-info">
+				<small>Paypal Options</small>
+				
+				<div id="paypal-button-container"></div>
+			</div>
+			 -->
+		</div>
+
+		<div class="col-lg-6">
+			<div class="box-element">
+				<a  class="btn btn-outline-dark" href="{% url 'cart' %}">&#x2190; Back to Cart</a>
+				<hr>
+				<h3>Order Summary</h3>
+				<hr>
+				{% for item in order.orderitems.all %}
+				<div class="cart-row">
+					<div style="flex:2"><img class="row-image" src="{{item.product.imageURL}}"></div>
+					<div style="flex:2"><p>{{item.product.name}}</p></div>
+					<div style="flex:1"><p>${{item.product.price|floatformat:2}}</p></div>
+					<div style="flex:1"><p>x{{item.quantity}}</p></div>
+				</div>
+				{% endfor %}
+				<h5>Items:   {{order.get_total_count}}</h5>
+				<h5>Total:   ${{order.get_total_price|floatformat:2}}</h5>
+			</div>
+		</div>
+	</div>
+	<script>
+
+			// function checkValidation(){
+				
+			// 	let address=document.getElementById("addressInp").value;
+			// 	console.log(address)
+			// 	if(!address){
+					
+			// 		return false;
+			// 	}
+			// 	let city=document.getElementById("cityInp").value;
+			// 	console.log(city)
+			// 	if(!city){
+					
+			// 		return false;
+			// 	}
+			// 	let state=document.getElementById("stateInp").value;
+			// 	console.log(state)
+			// 	if(!state){
+					
+			// 		return false;
+			// 	}
+			// 	let country=document.getElementById("countryInp").value;
+			// 	console.log(country)
+			// 	if(!country){
+			// 		console.log(country)
+			// 		return false;
+			// 	}
+			// 	let zipcode=document.getElementById("zipCodeInp").value;
+			// 	console.log(zipcode)
+			// 	if(!(isNaN(zipcode))){
+			// 		console.log(zipcode)
+			// 		return false;
+			// 	}
+			// 	return true;
+
+			// }
+
+			// let btn = document.getElementById('form-button');
+			// // console.log(btn)
+			// btn.addEventListener("click",function(){
+			// 	console.log(checkValidation());
+			// 	if(checkValidation()){
+			// 		let paymentInfo = document.getElementById('payment-info');
+			// 		console(paymentInfo)
+			// 		paymentInfo.classList.remove('hidden');
+			// 	}
+			// })
+	</script>
+    {% endblock %}
